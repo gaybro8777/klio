@@ -155,6 +155,14 @@ Only supported in batch mode.
 
 Klio supports BigQuery columns as event inputs. More information about configuring BigQuery table inputs can be found in the :ref:`event-config-bigquery` event config section.
 
+Avro
+^^^^
+
+Only supported in batch mode.
+Both local and GCS avro files are supported.
+
+More information and examples on how to read and write to avro files
+in :ref:`event-config-avro-read` the event config section.
 
 Data I/O
 --------

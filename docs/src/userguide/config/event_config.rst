@@ -299,9 +299,99 @@ Example configuration for `Google BigQuery`_, by specifying a query in the BigQu
 
     Inherited from :ref:`global event input config <skip-klio-read>`.
 
+
+.. _event-config-avro-read:
+
+Avro
+^^^^
+
+*Mode: Batch*
+
+``KlioReadFromAvro`` reads records in from the provided avro location.
+If the records' schema include an ``element`` field,
+the KlioMessage ``data.element`` will be set to the value.
+If there is no ``element`` field on the records read in from the avro,
+the entire record will be cast to bytes and stuffed into
+the KlioMessage ``data.element`` field.
+
+Example configuration for reading elements from a directory of avro files:
+
+.. code-block:: yaml
+
+    name: my-cool-batch-job
+    pipeline_options:
+        streaming: False
+    job_config:
+        events:
+            inputs:
+                - type: avro
+                  location: gs://my-bucket/
+
+Example configuration for reading elements from a specific avro file:
+
+.. code-block:: yaml
+
+    name: my-cool-batch-job
+    pipeline_options:
+        streaming: False
+    job_config:
+        events:
+            inputs:
+                - type: avro
+                  location: gs://my-bucket
+                  file_pattern: my_specific_file.avro
+
+.. option:: job_config.events.inputs[].type
+
+    Value: ``avro``
+
+    | **Runner**: Dataflow, Direct
+    | *Required*
+
+.. option:: job_config.events.inputs[].location STR
+
+    Location of local or GCS avro file(s) to read.
+    This field is optional if ``job_config.events.inputs[].file_pattern`` is provided.
+
+    | **Runner**: Dataflow, Direct
+    | *Optional*
+
+.. option:: job_config.events.inputs[].file_pattern STR
+
+    Pattern of file name(s) to read.
+    This field is optional if ``job_config.events.inputs[].location`` is provided.
+
+    | **Runner**: Dataflow, Direct
+    | *Optional*
+
+    .. note::
+
+        If both ``job_config.events.inputs[].location`` and
+        ``job_config.events.inputs[].file_pattern`` are provided,
+        the two fields will be joined to to find files matching ``file_pattern``
+        located in the provided ``location`` path.
+
+.. option:: job_config.events.inputs[].min_bundle_size INT
+
+    Minimum size (bytes) considered when splitting the input into bundles.
+
+    | **Runner**: Dataflow, Direct
+    | *Optional*
+
+.. option:: job_config.events.inputs[].validate BOOL
+
+    flag to verify files exist during pipeline creation time.
+
+    | **Runner**: Dataflow, Direct
+    | *Optional*
+
+.. option:: job_config.events.inputs[].skip_klio_read BOOL
+
+    Inherited from :ref:`global event input config <skip-klio-read>`.
+
+
 Output
 ------
-
 
 Google Pub/Sub
 ^^^^^^^^^^^^^^
@@ -343,6 +433,96 @@ Example configuration for `Google Pub/Sub`_:
 .. option:: job_config.events.outputs[].skip_klio_write BOOL
 
     Inherited from :ref:`global event output config <skip-klio-write>`.
+
+Avro
+^^^^
+
+*Mode: Batch*
+
+``KlioWriteToAvro`` writes records in the provided local or GCS location.
+
+The avro schema defaults to a bytes field keyed as ``element``.
+The transform takes the incoming record, parses it to a KlioMessage,
+then sets the KlioMessage field ``data.element`` as the value of the avro schema field ``element``.
+The transform can also be used to write avro files locally when testing on ``DirectRunner``.
+
+Example configuration for writing elements to a local avro file
+or an avro file stored in GCS.
+
+.. code-block:: yaml
+
+    name: my-cool-batch-job
+    pipeline_options:
+        streaming: False
+    job_config:
+        events:
+            outputs:
+                - type: avro
+                  location: gs://my-bucket/avro-subdirectory
+
+.. option:: job_config.events.inputs[].type
+
+    Value: ``avro``
+
+    | **Runner**: Dataflow, Direct
+    | *Required*
+
+.. option:: job_config.events.inputs[].location STR
+
+    Location of local or GCS avro file(s) to write to.
+    This field is optional if ``job_config.events.outputs[].file_path_prefix`` is provided.
+
+    | **Runner**: Dataflow, Direct
+    | *Optional*
+
+.. option:: job_config.events.inputs[].file_pattern STR
+
+    Pattern of file name(s) to read.
+    This field is optional if ``job_config.events.inputs[].location`` is provided.
+
+    | **Runner**: Dataflow, Direct
+    | *Optional*
+
+.. option:: job_config.events.inputs[].codec STR
+
+    Codec to use for block-level compression.
+    Default value is ``'deflate'``.
+
+    | **Runner**: Dataflow, Direct
+    | *Optional*
+
+.. option:: job_config.events.inputs[].file_name_suffix STR
+
+    Suffix of files to write.
+
+    | **Runner**: Dataflow, Direct
+    | *Optional*
+
+.. option:: job_config.events.inputs[].num_shards STR
+
+    Number of shards to use when writing files.
+
+    | **Runner**: Dataflow, Direct
+    | *Optional*
+
+.. option:: job_config.events.inputs[].shard_name_template STR
+
+    Template for file shard names.
+
+    | **Runner**: Dataflow, Direct
+    | *Optional*
+
+.. option:: job_config.events.inputs[].mime_type STR
+
+    Mime type of written files.
+    Defaults to ``'application/x-avro'``
+
+    | **Runner**: Dataflow, Direct
+    | *Optional*
+
+.. option:: job_config.events.inputs[].skip_klio_read BOOL
+
+    Inherited from :ref:`global event input config <skip-klio-read>`.
 
 
 Custom
